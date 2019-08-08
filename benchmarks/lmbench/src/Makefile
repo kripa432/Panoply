@@ -85,9 +85,9 @@ else
 	Crypto_Library_Name := sgx_tcrypto
 endif
 
-Enclave_C_Files := $(wildcard MyEnclave/Lmbench/*.c)
-Enclave_Cpp_Files := MyEnclave/MyEnclave.cpp $(wildcard MyEnclave/EnclaveUtil/*.cpp) $(wildcard MyEnclave/IO/*.cpp) $(wildcard MyEnclave/SysEnvironment/*.cpp) $(wildcard MyEnclave/Net/*.cpp) $(wildcard MyEnclave/Thread/*.cpp) $(wildcard MyEnclave/Lmbench/*.cpp) $(wildcard MyEnclave/test/*.cpp)
-Enclave_Include_Paths := -IInclude -IMyEnclave -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/stlport -I../src/MyEnclave/include
+Enclave_C_Files := $(wildcard MyEnclave/bzip2/*.c)
+Enclave_Cpp_Files := MyEnclave/MyEnclave.cpp $(wildcard MyEnclave/EnclaveUtil/*.cpp) $(wildcard MyEnclave/IO/*.cpp) $(wildcard MyEnclave/SysEnvironment/*.cpp) $(wildcard MyEnclave/Net/*.cpp) $(wildcard MyEnclave/Thread/*.cpp) $(wildcard MyEnclave/bzip2/*.cpp) $(wildcard MyEnclave/test/*.cpp)
+Enclave_Include_Paths := -IInclude -IMyEnclave -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/stlport -I../src/MyEnclave/include -I../src/MyEnclave/bzip2
 Enclave_C_Flags := $(SGX_COMMON_CFLAGS) -nostdinc -fvisibility=hidden -fpie -fno-stack-protector $(Enclave_Include_Paths)
 Enclave_Cpp_Flags := $(Enclave_C_Flags) -std=c++03 -nostdinc++ -fpermissive -w -DTOR_UNIT_TESTS
 Enclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L$(SGX_LIBRARY_PATH) \
@@ -155,11 +155,11 @@ $(App_Name): App/MyEnclave_u.o $(App_Cpp_Objects)
 
 ######## Enclave Objects ########
 
-MyEnclave/MyEnclave_t.c: $(SGX_EDGER8R) MyEnclave/MyEnclave.edl 
+MyEnclave/MyEnclave_t.c: $(SGX_EDGER8R) MyEnclave/MyEnclave.edl
 	@cd MyEnclave && $(SGX_EDGER8R) --use-prefix --trusted ../MyEnclave/MyEnclave.edl --search-path ../MyEnclave --search-path $(SGX_SDK)/include
 	@echo "GEN  =>  $@"
 
-MyEnclave/MyEnclave_t.o: MyEnclave/MyEnclave_t.c 
+MyEnclave/MyEnclave_t.o: MyEnclave/MyEnclave_t.c
 	@$(CC) $(Enclave_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
@@ -167,7 +167,11 @@ MyEnclave/%.o: MyEnclave/%.cpp
 	@$(CXX) $(Enclave_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
 
-$(Enclave_Name): MyEnclave/MyEnclave_t.o $(Enclave_Cpp_Objects)
+MyEnclave/%.o: MyEnclave/%.c
+	@$(CXX) $(Enclave_Cpp_Flags) -c $< -o $@
+	@echo "CXX  <=  $<"
+
+$(Enclave_Name): MyEnclave/MyEnclave_t.o $(Enclave_Cpp_Objects)  $(Enclave_C_Objects)
 	@$(CXX) $^ -o $@ $(Enclave_Link_Flags)
 	@echo "LINK =>  $@"
 
@@ -179,3 +183,6 @@ $(Signed_Enclave_Name): $(Enclave_Name)
 
 clean:
 	@rm -f $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) App/MyEnclave_u.* $(Enclave_Cpp_Objects) MyEnclave/MyEnclave_t.* $(Enclave_C_Objects)
+
+build_msg:
+	echo $(Enclave_C_Files)
