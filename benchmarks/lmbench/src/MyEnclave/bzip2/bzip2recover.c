@@ -144,7 +144,7 @@ static void tooManyBlocks ( Int32 max_handled_blocks )
 
 typedef
    struct {
-      FILE*  handle;
+      SGX_FILE_WRAPPER   handle;
       Int32  buffer;
       Int32  buffLive;
       Char   mode;
@@ -153,7 +153,7 @@ typedef
 
 
 /*---------------------------------------------*/
-static BitStream* bsOpenReadStream ( FILE* stream )
+static BitStream* bsOpenReadStream ( SGX_FILE_WRAPPER  stream )
 {
    BitStream *bs = malloc ( sizeof(BitStream) );
    if (bs == NULL) mallocFail ( sizeof(BitStream) );
@@ -166,7 +166,7 @@ static BitStream* bsOpenReadStream ( FILE* stream )
 
 
 /*---------------------------------------------*/
-static BitStream* bsOpenWriteStream ( FILE* stream )
+static BitStream* bsOpenWriteStream ( SGX_FILE_WRAPPER  stream )
 {
    BitStream *bs = malloc ( sizeof(BitStream) );
    if (bs == NULL) mallocFail ( sizeof(BitStream) );
@@ -273,9 +273,9 @@ static Bool endsInBz2 ( Char* name )
 
 /*---------------------------------------------*/
 /* Open an output file safely with O_EXCL and good permissions */
-FILE* fopen_output( Char* name, const char* mode )
+SGX_FILE_WRAPPER  fopen_output( Char* name, const char* mode )
 {
-  FILE *fp;
+  SGX_FILE_WRAPPER fp;
   int   fh;
    
   fh = open(name, O_WRONLY|O_CREAT|O_EXCL, 0600);
@@ -315,8 +315,8 @@ MaybeUInt64 rbEnd  [BZ_MAX_HANDLED_BLOCKS];
 
 Int32 main ( Int32 argc, Char** argv )
 {
-   FILE*       inFile;
-   FILE*       outFile;
+   SGX_FILE_WRAPPER        inFile;
+   SGX_FILE_WRAPPER        outFile;
    BitStream*  bsIn, *bsWr;
    Int32       b, wrBlock, currBlock, rbCtr;
    MaybeUInt64 bitsRead;
@@ -492,18 +492,18 @@ Int32 main ( Int32 argc, Char** argv )
 	 }
 	 /* Now split points to the start of the basename. */
          ofs  = split - outFileName;
-         sprintf (split, "rec%5d", wrBlock+1);
+         sprintf(split, "rec%5d", wrBlock+1);
          for (p = split; *p != 0; p++) if (*p == ' ') *p = '0';
-         strcat (outFileName, inFileName + ofs);
+         strcat(outFileName, inFileName + ofs);
 
          if ( !endsInBz2(outFileName)) strcat ( outFileName, ".bz2" );
 
-         fprintf ( stderr, "   writing block %d to `%s' ...\n",
+         fprintf( stderr, "   writing block %d to `%s' ...\n",
                            wrBlock+1, outFileName );
 
          outFile = fopen_output ( outFileName, "wb" );
          if (outFile == NULL) {
-            fprintf ( stderr, "%s: can't write `%s'\n",
+            fprintf( stderr, "%s: can't write `%s'\n",
                       progName, outFileName );
             exit(1);
          }

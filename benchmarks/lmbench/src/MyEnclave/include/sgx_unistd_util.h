@@ -64,6 +64,7 @@ extern int sgx_wrapper_mknod(const char *pathname, mode_t mode, dev_t dev);
 extern int update_untrusted_buff_addr();
 extern long rapid_read(int fd, void *buf, size_t count);
 extern void* untrusted_malloc(int n);
+extern int sgx_wrapper_isatty(int fd);
 
 #ifdef __cplusplus
 }
@@ -115,6 +116,7 @@ extern void* untrusted_malloc(int n);
 #define alarm(A) sgx_wrapper_alarm(A)
 #define mknod(A, B, C) sgx_wrapper_mknod(A, B, C)
 #define ftruncate(A, B) sgx_wrapper_ftruncate(A, B)
+#define isatty(A) sgx_wrapper_isatty(A)
 
 #endif
 

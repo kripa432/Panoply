@@ -77,6 +77,7 @@ enclave {
 		unsigned int ocall_alarm(unsigned int seconds);
 		int ocall_copy_arg([in, out, size=buff_size]void* buff, int buff_size, [user_check] char **argv, int index);
 		int ocall_mknod([in, string]const char *pathname, mode_t mode, dev_t dev);
+		int ocall_isatty(int fd);
 		void* ocall_malloc(int n);
     };
 

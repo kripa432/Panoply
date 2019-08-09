@@ -891,7 +891,7 @@ int BZ_API(BZ2_bzDecompressEnd)  ( bz_stream *strm )
 
 typedef 
    struct {
-      FILE*     handle;
+      SGX_FILE_WRAPPER      handle;
       Char      buf[BZ_MAX_UNUSED];
       Int32     bufN;
       Bool      writing;
@@ -903,7 +903,7 @@ typedef
 
 
 /*---------------------------------------------*/
-static Bool myfeof ( FILE* f )
+static Bool myfeof ( SGX_FILE_WRAPPER  f )
 {
    Int32 c = fgetc ( f );
    if (c == EOF) return True;
@@ -915,7 +915,7 @@ static Bool myfeof ( FILE* f )
 /*---------------------------------------------------*/
 BZFILE* BZ_API(BZ2_bzWriteOpen) 
                     ( int*  bzerror,      
-                      FILE* f, 
+                      SGX_FILE_WRAPPER  f, 
                       int   blockSize100k, 
                       int   verbosity,
                       int   workFactor )
@@ -1086,7 +1086,7 @@ void BZ_API(BZ2_bzWriteClose64)
 /*---------------------------------------------------*/
 BZFILE* BZ_API(BZ2_bzReadOpen) 
                    ( int*  bzerror, 
-                     FILE* f, 
+                     SGX_FILE_WRAPPER  f, 
                      int   verbosity,
                      int   small,
                      void* unused,
@@ -1391,7 +1391,7 @@ BZFILE * bzopen_or_bzdopen
    int    blockSize100k = 9;
    int    writing       = 0;
    char   mode2[10]     = "";
-   FILE   *fp           = NULL;
+   SGX_FILE_WRAPPER fp           = NULL;
    BZFILE *bzfp         = NULL;
    int    verbosity     = 0;
    int    workFactor    = 30;
@@ -1514,7 +1514,7 @@ int BZ_API(BZ2_bzflush) (BZFILE *b)
 void BZ_API(BZ2_bzclose) (BZFILE* b)
 {
    int bzerr;
-   FILE *fp;
+   SGX_FILE_WRAPPER fp;
    
    if (b==NULL) {return;}
    fp = ((bzFile *)b)->handle;

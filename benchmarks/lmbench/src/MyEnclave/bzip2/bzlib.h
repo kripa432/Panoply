@@ -136,9 +136,10 @@ BZ_EXTERN int BZ_API(BZ2_bzDecompressEnd) (
 
 typedef void BZFILE;
 
+
 BZ_EXTERN BZFILE* BZ_API(BZ2_bzReadOpen) ( 
       int*  bzerror,   
-      FILE* f, 
+      SGX_FILE_WRAPPER  f, 
       int   verbosity, 
       int   small,
       void* unused,    
@@ -166,7 +167,7 @@ BZ_EXTERN int BZ_API(BZ2_bzRead) (
 
 BZ_EXTERN BZFILE* BZ_API(BZ2_bzWriteOpen) ( 
       int*  bzerror,      
-      FILE* f, 
+      SGX_FILE_WRAPPER  f, 
       int   blockSize100k, 
       int   verbosity, 
       int   workFactor 

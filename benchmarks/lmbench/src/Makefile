@@ -85,9 +85,9 @@ else
 	Crypto_Library_Name := sgx_tcrypto
 endif
 
-Enclave_C_Files := $(wildcard MyEnclave/bzip2/*.c)
-Enclave_Cpp_Files := MyEnclave/MyEnclave.cpp $(wildcard MyEnclave/EnclaveUtil/*.cpp) $(wildcard MyEnclave/IO/*.cpp) $(wildcard MyEnclave/SysEnvironment/*.cpp) $(wildcard MyEnclave/Net/*.cpp) $(wildcard MyEnclave/Thread/*.cpp) $(wildcard MyEnclave/bzip2/*.cpp) $(wildcard MyEnclave/test/*.cpp)
-Enclave_Include_Paths := -IInclude -IMyEnclave -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/stlport -I../src/MyEnclave/include -I../src/MyEnclave/bzip2
+Enclave_C_Files := MyEnclave/bzip2/blocksort.c MyEnclave/bzip2/bzlib.c MyEnclave/bzip2/compress.c MyEnclave/bzip2/crctable.c MyEnclave/bzip2/decompress.c MyEnclave/bzip2/huffman.c MyEnclave/bzip2/randtable.c MyEnclave/bzip2/bzip2.c
+Enclave_Cpp_Files := MyEnclave/MyEnclave.cpp $(wildcard MyEnclave/EnclaveUtil/*.cpp) $(wildcard MyEnclave/IO/*.cpp) $(wildcard MyEnclave/SysEnvironment/*.cpp) $(wildcard MyEnclave/Net/*.cpp) $(wildcard MyEnclave/Thread/*.cpp) $(wildcard MyEnclave/bzip2/*.cpp)
+Enclave_Include_Paths := -IInclude -IMyEnclave -I$(SGX_SDK)/include  -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/stlport -I../src/MyEnclave/include -I../src/MyEnclave/include/sgx -I../src/MyEnclave/bzip2
 Enclave_C_Flags := $(SGX_COMMON_CFLAGS) -nostdinc -fvisibility=hidden -fpie -fno-stack-protector $(Enclave_Include_Paths)
 Enclave_Cpp_Flags := $(Enclave_C_Flags) -std=c++03 -nostdinc++ -fpermissive -w -DTOR_UNIT_TESTS
 Enclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L$(SGX_LIBRARY_PATH) \
@@ -185,4 +185,4 @@ clean:
 	@rm -f $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) App/MyEnclave_u.* $(Enclave_Cpp_Objects) MyEnclave/MyEnclave_t.* $(Enclave_C_Objects)
 
 build_msg:
-	echo $(Enclave_C_Files)
+	$(CXX) $(App_Cpp_Flags) -E /home/kripa432/Code/sgx/panoply/benchmarks/lmbench/src/App/IO/sysstat_ocall.cpp

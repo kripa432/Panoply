@@ -207,7 +207,7 @@ Char    outName[FILE_NAME_LEN];
 Char    tmpName[FILE_NAME_LEN];
 Char    *progName;
 Char    progNameReally[FILE_NAME_LEN];
-FILE    *outputHandleJustInCase;
+SGX_FILE_WRAPPER outputHandleJustInCase;
 Int32   workFactor;
 
 static void    panic                 ( const Char* ) NORETURN;
@@ -957,7 +957,7 @@ Bool fileExists ( Char* name )
    security issues, simple this simply behaves like fopen.
 */
 static
-FILE* fopen_output_safely ( Char* name, const char* mode )
+SGX_FILE_WRAPPER  fopen_output_safely ( Char* name, const char* mode )
 {
 #  if BZ_UNIX
    SGX_WRAPPER_FILE     fp;

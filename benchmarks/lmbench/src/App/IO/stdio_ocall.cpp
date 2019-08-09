@@ -112,6 +112,24 @@ int ocall_fputs(const char* str, SGX_WRAPPER_FILE FILESTREAM)
     return fputs(str, file);
 }
 
+int ocall_puts(const char *s){
+	return puts(s);
+}
+
+int ocall_fgetc(SGX_WRAPPER_FILE FILESTREAM){
+    fprintf (stderr, "ocall_fputs: %d", FILESTREAM);
+    FILE* file = NULL;
+    file = getFile(FILESTREAM);
+    return fgetc(file);
+}
+
+int ocall_ungetc(int c, SGX_WRAPPER_FILE FILESTREAM){
+    fprintf (stderr, "ocall_fputs: %d", FILESTREAM);
+    FILE* file = NULL;
+    file = getFile(FILESTREAM);
+    return ungetc(c, file);
+}
+
 int ocall_feof(SGX_WRAPPER_FILE FILESTREAM)   
 {
     // // fprintf (stderr, "ocall_feof: %d", FILESTREAM);
@@ -325,4 +343,9 @@ int ocall_rename(const char* _old, const char* _new)
 char *ocall_tempnam(const char *dir, const char *pfx)
 {
     return tempnam(dir, pfx);
+}
+
+
+int ocall_remove(const char *pathname){
+	return remove(pathname);
 }

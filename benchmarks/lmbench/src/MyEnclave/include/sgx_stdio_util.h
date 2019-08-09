@@ -9,6 +9,7 @@
 #include "struct/sgx_stdio_struct.h"
 #include "proxy/sgx_stdio_t.h"
 #include <stdio.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C"	{
@@ -46,11 +47,17 @@ extern int sgx_wrapper_vsscanf(const char* s, const char *format, void* ap);
 extern int sgx_wrapper_putchar(int c);
 extern int sgx_wrapper_putc(int c, SGX_WRAPPER_FILE FILESTREAM);
 extern int sgx_wrapper_fputc(int c, SGX_WRAPPER_FILE FILESTREAM);
+extern int sgx_wrapper_fgetc(SGX_WRAPPER_FILE FILE);
+extern int sgx_wrapper_ungetc(int c, SGX_WRAPPER_FILE FILE);
 extern int sgx_wrapper_fscanf(SGX_WRAPPER_FILE FILESTREAM, const char* format, ...);
 extern int sgx_wrapper_rename(const char* _old, const char* _new);
 extern SGX_WRAPPER_FILE sgx_wrapper_fopen(const char* filename, const char* mode);	
 extern SGX_WRAPPER_FILE sgx_wrapper_popen(const char* command, const char* type);	
 extern char *sgx_wrapper_tempnam(const char *dir, const char *pfx);
+extern int sgx_wrapper_remove(const char *pathname);
+extern int sgx_wrapper_sprintf(char *str, const char *format, ...);
+extern int sgx_wrapper_puts(const char *s);
+
 
 #define USE_INNER_SSCANF
 #ifdef USE_INNER_SSCANF
@@ -171,11 +178,27 @@ hidden_tor_sscanf(const char *buf, const char *pattern, ...);
 #define perror(A) sgx_wrapper_perror(A)
 #define fflush(A) sgx_wrapper_fflush(A)
 #define getc(A) sgx_wrapper_getc(A)
+#define fgetc(A) sgx_wrapper_fgetc(A)
+#define ungetc(A, B) sgx_wrapper_ungetc(A, B)
 #define getchar() sgx_wrapper_getchar()
 #define putchar(A) sgx_wrapper_putchar(A)
 #define putc(A, B) sgx_wrapper_putc(A, B)
+#define puts(A) sgx_wrapper_puts(A)
 #define fputc(A, B) sgx_wrapper_fputc(A, B)
 #define rename(A, B) sgx_wrapper_rename(A, B)
 #define tempnam(A, B) sgx_wrapper_tempnam(A, B)
+#define remove(A) sgx_wrapper_remove(A)
+#define sprintf(A, B, ...) sgx_wrapper_asprintf(&A, B, ##__VA_ARGS__)
+
+typedef int SGX_FILE_WRAPPER;
+
+#define strcpy(A, B) strncpy(A, B, strlen(B)+1)
+
+static char *strcat(char *dest, const char *src)
+{
+	strcpy(dest + strlen(dest), src);
+	return dest;
+}
+
 
 #endif

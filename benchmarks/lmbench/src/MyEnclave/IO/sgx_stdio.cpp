@@ -299,11 +299,32 @@ int sgx_wrapper_putc(int c, SGX_WRAPPER_FILE FILESTREAM)
 	return retval;
 }
 
+int sgx_wrapper_puts(const char *s){
+	int retval;
+	sgx_status_t status = ocall_puts(&retval, s);
+	CHECK_STATUS(status);
+	return retval;
+}
+
 int sgx_wrapper_fputc(int c, SGX_WRAPPER_FILE FILESTREAM)
 {
 	int retval; 
   sgx_status_t status = ocall_fputc(&retval, c, FILESTREAM);
   CHECK_STATUS(status);
+	return retval;
+}
+
+int sgx_wrapper_fgetc(SGX_WRAPPER_FILE FILESTREAM){
+	int retval;
+	sgx_status_t status = ocall_fgetc(&retval, FILESTREAM);
+	CHECK_STATUS(status);
+	return retval;
+}
+
+int sgx_wrapper_ungetc(int c, SGX_WRAPPER_FILE FILESTREAM){
+	int retval;
+	sgx_status_t status = ocall_ungetc(&retval, c, FILESTREAM);
+	CHECK_STATUS(status);
 	return retval;
 }
 
@@ -357,6 +378,13 @@ SGX_WRAPPER_FILE sgx_wrapper_popen(const char* command, const char* type)
   sgx_status_t status = SAFE_INVOKE(ocall_popen, &f, command, type);
   CHECK_STATUS(status);
   return f;
+}
+
+int sgx_wrapper_remove(const char *pathname){
+	int retval;
+	sgx_status_t status = ocall_remove(&retval, pathname);
+	CHECK_STATUS(status);
+	return retval;
 }
 
 

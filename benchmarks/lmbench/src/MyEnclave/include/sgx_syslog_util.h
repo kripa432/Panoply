@@ -11,7 +11,7 @@
 
 static inline void sgx_wrapper_closelog (void)
 {
-	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
+//	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
 }
 
 /* Open connection to system logger.
@@ -20,13 +20,13 @@ static inline void sgx_wrapper_closelog (void)
    marked with THROW.  */
 static inline void sgx_wrapper_openlog (const char *ident, int option, int facility)
 {
-	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
+//	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
 }
 
 /* Set the log mask level.  */
 static inline int sgx_wrapper_setlogmask (int mask)
 {
-	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
+//	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
 	return -1;
 }
 
@@ -36,7 +36,7 @@ static inline int sgx_wrapper_setlogmask (int mask)
    marked with THROW.  */
 static inline void sgx_wrapper_syslog (int pri, const char *fmt, ...)
 {
-	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
+//	fprintf(stderr, "Fix me: Call dummy sgx_wrapper_closelog \n");
 }
 
 #define closelog() sgx_wrapper_closelog()

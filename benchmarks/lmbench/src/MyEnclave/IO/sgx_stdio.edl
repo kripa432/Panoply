@@ -25,6 +25,8 @@ enclave {
         int ocall_vfprintf(SGX_WRAPPER_FILE FILESTREAM, [in, string]const char* format, [user_check] void* val);
         int ocall_vprintf([in, string]const char* format, [user_check] void* val);
         char* ocall_fgets([out, size=num] char *str, int num, SGX_WRAPPER_FILE FILESTREAM);
+        int ocall_fgetc(SGX_WRAPPER_FILE FILESTREAM);
+        int ocall_ungetc(int c, SGX_WRAPPER_FILE FILESTREAM);
         int ocall_getc_unlocked(SGX_WRAPPER_FILE FILESTREAM);
         void ocall_flockfile(SGX_WRAPPER_FILE filehandle);
         void ocall_funlockfile(SGX_WRAPPER_FILE filehandle);
@@ -43,10 +45,12 @@ enclave {
         int ocall_vsscanf([in, string] const char* s, [in, string]const char *format, [user_check] void* val);
         int ocall_putchar(int c);
         int ocall_putc (int c, SGX_WRAPPER_FILE stream);
+		int ocall_puts([in,string]const char *s);
         int ocall_fputc (int c, SGX_WRAPPER_FILE stream);
         SGX_WRAPPER_FILE ocall_fdopen(int fd, [in, string] const char *modes);    
         int ocall_fileno(SGX_WRAPPER_FILE stream); 
         int ocall_rename([in, string]const char* _old, [in, string]const char* _new);
+		int ocall_remove([in] const char *pathname);
 
         char *ocall_tempnam([in, string]const char *dir, [in, string]const char *pfx);
 

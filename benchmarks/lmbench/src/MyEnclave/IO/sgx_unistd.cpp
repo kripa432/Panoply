@@ -473,6 +473,13 @@ extern "C"	{
 		return retval;	
 	}	
 
+	int sgx_wrapper_isatty(int fd){
+		int retval;
+		sgx_status_t status = ocall_isatty(&retval, fd);
+		CHECK_STATUS(status);
+		return retval;
+	}
+
 	void* untrusted_malloc(int n)
 	{
 		void* retval = NULL;

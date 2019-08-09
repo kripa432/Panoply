@@ -5,6 +5,7 @@ enclave {
 	// include "enclave_net_wrapper.h"
 	include "sgx/sys/types.h"
 	include "sgx/sys/stat.h"
+	include "utime.h"
 
     untrusted	{
 		int ocall_stat([in, string]const char *path, [out] struct stat *buf);
@@ -21,6 +22,7 @@ enclave {
 		int ocall_mkdirat (int fd, [in, string]const char *path, mode_t mode);
 		int ocall_mkfifo ([in, string]const char *path, mode_t mode);
 		int ocall_mkfifoat (int fd, [in, string]const char *path, mode_t mode);
+		int ocall_utime([in, string]const char *filename, [in]const struct utimbuf *times);
     };
 
 };

@@ -74,3 +74,8 @@ int ocall_mkfifoat (int fd, const char *path, mode_t mode)
 {
 	return mkfifoat(fd, path, mode);
 }
+
+
+int ocall_utime(const char *filename,const struct utimbuf *times){
+	return utime(filename, times);
+}

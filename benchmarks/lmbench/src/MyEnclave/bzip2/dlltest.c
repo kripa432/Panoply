@@ -118,7 +118,7 @@ int main(int argc,char *argv[])
 
       if(decompress){
          BZFILE *BZ2fp_r = NULL;
-         FILE *fp_w = NULL;
+         SGX_FILE_WRAPPER fp_w = NULL;
 
          if(fn_w){
             if((fp_w = fopen(fn_w,"wb"))==NULL){
@@ -141,7 +141,7 @@ int main(int argc,char *argv[])
          if(fp_w != stdout) fclose(fp_w);
       }else{
          BZFILE *BZ2fp_w = NULL;
-         FILE *fp_r = NULL;
+         SGX_FILE_WRAPPER fp_r = NULL;
 
          if(fn_r){
             if((fp_r = fopen(fn_r,"rb"))==NULL){

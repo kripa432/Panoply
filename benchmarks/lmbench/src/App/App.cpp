@@ -409,6 +409,7 @@ int SGX_CDECL main(int argc, char *argv[])
     size_t bss_data_addr = get_parsed_section_info(".bss", 0);
     size_t bss_data_size = get_parsed_section_info(".bss", 1); 
 
+	/*
     int spret;
     MyEnclave_ecall_set_parsed_section_info(global_eid, &spret, ".start", 0, enc_start_addr);
     MyEnclave_ecall_set_parsed_section_info(global_eid, &spret, ".data", 0, sec_data_addr);
@@ -420,15 +421,18 @@ int SGX_CDECL main(int argc, char *argv[])
         print_error_message(ret);
         return -1;
     }  
-
+	*/
     ret = MyEnclave_ecall_set_enclave_id(global_eid, global_eid);
 
+	/*
     if (ret != SGX_SUCCESS) {
         print_error_message(ret);
         return -1;
     }  
 
-    ret = MyEnclave_ecall_fork_enter_main(global_eid, NULL, 0, argc, argv, 20);
+	*/
+
+    ret = MyEnclave_ecall_bzip2_main(global_eid, NULL, argc, argv);
     if (ret != SGX_SUCCESS) {
         print_error_message(ret);
         return -1;

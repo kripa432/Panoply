@@ -207,7 +207,7 @@ Char    outName[FILE_NAME_LEN];
 Char    tmpName[FILE_NAME_LEN];
 Char    *progName;
 Char    progNameReally[FILE_NAME_LEN];
-FILE    *outputHandleJustInCase;
+SGX_FILE_WRAPPER outputHandleJustInCase;
 Int32   workFactor;
 
 static void    panic                 ( const Char* ) NORETURN;
@@ -315,7 +315,7 @@ void uInt64_toAscii ( char* outbuf, UInt64* n )
 
 /*---------------------------------------------*/
 static 
-Bool myfeof ( FILE* f )
+Bool myfeof ( SGX_FILE_WRAPPER  f )
 {
    Int32 c = fgetc ( f );
    if (c == EOF) return True;
@@ -326,7 +326,7 @@ Bool myfeof ( FILE* f )
 
 /*---------------------------------------------*/
 static 
-void compressStream ( FILE *stream, FILE *zStream )
+void compressStream ( SGX_FILE_WRAPPER stream, SGX_FILE_WRAPPER zStream )
 {
    BZFILE* bzf = NULL;
    UChar   ibuf[5000];
@@ -430,7 +430,7 @@ void compressStream ( FILE *stream, FILE *zStream )
 
 /*---------------------------------------------*/
 static 
-Bool uncompressStream ( FILE *zStream, FILE *stream )
+Bool uncompressStream ( SGX_FILE_WRAPPER zStream, SGX_FILE_WRAPPER stream )
 {
    BZFILE* bzf = NULL;
    Int32   bzerr, bzerr_dummy, ret, nread, streamNo, i;
@@ -551,7 +551,7 @@ Bool uncompressStream ( FILE *zStream, FILE *stream )
 
 /*---------------------------------------------*/
 static 
-Bool testStream ( FILE *zStream )
+Bool testStream ( SGX_FILE_WRAPPER zStream )
 {
    BZFILE* bzf = NULL;
    Int32   bzerr, bzerr_dummy, ret, nread, streamNo, i;
@@ -939,7 +939,7 @@ void copyFileName ( Char* to, Char* from )
 static 
 Bool fileExists ( Char* name )
 {
-   FILE *tmp   = fopen ( name, "rb" );
+   SGX_FILE_WRAPPER tmp   = fopen ( name, "rb" );
    Bool exists = (tmp != NULL);
    if (tmp != NULL) fclose ( tmp );
    return exists;
@@ -957,10 +957,10 @@ Bool fileExists ( Char* name )
    security issues, simple this simply behaves like fopen.
 */
 static
-FILE* fopen_output_safely ( Char* name, const char* mode )
+SGX_FILE_WRAPPER  fopen_output_safely ( Char* name, const char* mode )
 {
 #  if BZ_UNIX
-   FILE*     fp;
+   SGX_FILE_WRAPPER      fp;
    IntNative fh;
    fh = open(name, O_WRONLY|O_CREAT|O_EXCL, S_IWUSR|S_IRUSR);
    if (fh == -1) return NULL;
@@ -1132,8 +1132,8 @@ Bool mapSuffix ( Char* name,
 static 
 void compress ( Char *name )
 {
-   FILE  *inStr;
-   FILE  *outStr;
+   SGX_FILE_WRAPPER inStr;
+   SGX_FILE_WRAPPER outStr;
    Int32 n, i;
    struct MY_STAT statBuf;
 
@@ -1227,7 +1227,7 @@ void compress ( Char *name )
       case SM_I2O:
          inStr = stdin;
          outStr = stdout;
-         if ( isatty ( fileno ( stdout ) ) ) {
+         if ( isatty( fileno ( stdout ) ) ) {
             fprintf ( stderr,
                       "%s: I won't write compressed data to a terminal.\n",
                       progName );
@@ -1241,7 +1241,7 @@ void compress ( Char *name )
       case SM_F2O:
          inStr = fopen ( inName, "rb" );
          outStr = stdout;
-         if ( isatty ( fileno ( stdout ) ) ) {
+         if ( isatty( fileno ( stdout ) ) ) {
             fprintf ( stderr,
                       "%s: I won't write compressed data to a terminal.\n",
                       progName );
@@ -1313,8 +1313,8 @@ void compress ( Char *name )
 static 
 void uncompress ( Char *name )
 {
-   FILE  *inStr;
-   FILE  *outStr;
+   SGX_FILE_WRAPPER inStr;
+   SGX_FILE_WRAPPER outStr;
    Int32 n, i;
    Bool  magicNumberOK;
    Bool  cantGuess;
@@ -1413,7 +1413,7 @@ void uncompress ( Char *name )
       case SM_I2O:
          inStr = stdin;
          outStr = stdout;
-         if ( isatty ( fileno ( stdin ) ) ) {
+         if ( isatty( fileno ( stdin ) ) ) {
             fprintf ( stderr,
                       "%s: I won't read compressed data from a terminal.\n",
                       progName );
@@ -1511,7 +1511,7 @@ void uncompress ( Char *name )
 static 
 void testf ( Char *name )
 {
-   FILE *inStr;
+   SGX_FILE_WRAPPER inStr;
    Bool allOK;
    struct MY_STAT statBuf;
 
@@ -1554,7 +1554,7 @@ void testf ( Char *name )
    switch ( srcMode ) {
 
       case SM_I2O:
-         if ( isatty ( fileno ( stdin ) ) ) {
+         if ( isatty( fileno ( stdin ) ) ) {
             fprintf ( stderr,
                       "%s: I won't read compressed data from a terminal.\n",
                       progName );
@@ -1773,7 +1773,12 @@ void addFlagsFromEnvVar ( Cell** argList, Char* varName )
 /*---------------------------------------------*/
 #define ISFLAG(s) (strcmp(aa->name, (s))==0)
 
-IntNative main ( IntNative argc, Char *argv[] )
+extern "C" {
+
+extern ecall_bzip2_main(int argc, char *argv[]);
+
+}
+IntNative ecall_bzip2_main ( IntNative argc, Char *argv[] )
 {
    Int32  i, j;
    Char   *tmp;

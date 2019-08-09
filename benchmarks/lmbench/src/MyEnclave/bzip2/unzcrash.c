@@ -73,7 +73,7 @@ void flip_bit ( int bit )
 
 int main ( int argc, char** argv )
 {
-   FILE* f;
+   SGX_FILE_WRAPPER  f;
    int   r;
    int   bit;
    int   i;

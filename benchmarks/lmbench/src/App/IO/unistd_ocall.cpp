@@ -413,6 +413,10 @@ int ocall_mknod(const char *pathname, mode_t mode, dev_t dev)
     return mknod(pathname, mode, dev);
 }
 
+int ocall_isatty(int fd){
+	return isatty(fd);
+}
+
 void* ocall_malloc(int n)
 {
     return malloc(n);

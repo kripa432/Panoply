@@ -7,6 +7,7 @@
 #include <sgx_ocall_util.h>
 
 #include <MyEnclave_t.h>
+#include <utime.h>
 
 int sgx_wrapper_stat(const char *path, struct stat *buf)
 {
@@ -92,6 +93,13 @@ int sgx_wrapper_mkfifoat(int fd, const char *path, mode_t mode)
 {
 	int retval;
 	sgx_status_t status = ocall_mkfifoat(&retval, fd, path, mode);
+	CHECK_STATUS(status);
+	return retval;
+}
+
+int sgx_wrapper_utime(const char *filename, const struct utimbuf *times){
+	int retval;
+	sgx_status_t status = ocall_utime(&retval, filename, times);
 	CHECK_STATUS(status);
 	return retval;
 }

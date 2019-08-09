@@ -31,7 +31,7 @@
 typedef uint32_t ATTESTATION_STATUS;
 
 
-#define SUCCESS                            0x00
+#define SUCCESS 0x0
 #define INVALID_PARAMETER                0xE1
 #define VALID_SESSION                    0xE2
 #define INVALID_SESSION                    0xE3

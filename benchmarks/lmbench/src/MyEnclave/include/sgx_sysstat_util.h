@@ -7,6 +7,7 @@
 #define SGX_SYSSTAT_UTIL_H
 
 #include <sgx/sys/types.h>
+#include <utime.h>
 
 #ifdef __cplusplus
 extern "C"	{
@@ -23,6 +24,7 @@ extern int sgx_wrapper_mkdir(const char *path, mode_t mode);
 extern int sgx_wrapper_mkdirat(int fd, const char *path, mode_t mode);
 extern int sgx_wrapper_mkfifo(const char *path, mode_t mode);
 extern int sgx_wrapper_mkfifoat(int fd, const char *path, mode_t mode);
+extern int sgx_wrapper_utime(const char *filename, const struct utimbuf *times);
 
 #ifdef __cplusplus
 }
@@ -39,5 +41,6 @@ extern int sgx_wrapper_mkfifoat(int fd, const char *path, mode_t mode);
 #define mkdirat(A, B, C) sgx_wrapper_mkdirat(A, B, C)
 #define mkfifo(A, B) sgx_wrapper_mkfifo(A, B)
 #define mkfifoat(A, B, C) sgx_wrapper_mkfifoat(A, B, C)
+#define utime(A, B) sgx_wrapper_utime(A, B)
 
 #endif
