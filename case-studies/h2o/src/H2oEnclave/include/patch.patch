@@ -1,0 +1,822 @@
+diff -Naur ./h2o/memory.h ../../../../memcached/include/h2o/memory.h
+--- ./h2o/memory.h	2019-09-02 14:56:55.604389227 +0530
++++ ../../../../memcached/include/h2o/memory.h	2020-02-19 12:21:01.234812361 +0530
+@@ -33,7 +33,7 @@
+ #include <sgx_stdlib_util.h>
+ #include <string.h>
+ 
+-#include "H2oEnclave_t.h"
++#include "enclave_t.h"
+ #include <sgx_mem_util.h>
+ 
+ // # define TMP_MAX 238328
+diff -Naur ./sgx/bits/endian.h ../../../../memcached/include/sgx/bits/endian.h
+--- ./sgx/bits/endian.h	2019-09-02 14:56:55.604389227 +0530
++++ ../../../../memcached/include/sgx/bits/endian.h	1970-01-01 05:30:00.000000000 +0530
+@@ -1,8 +0,0 @@
+-/* i386/x86_64 are little-endian.  */
+-
+-#ifndef _ENDIAN_H
+-# error "Never use <bits/endian.h> directly; include <endian.h> instead."
+-#endif
+-
+-#define __BYTE_ORDER __LITTLE_ENDIAN
+-
+diff -Naur ./sgx/bits/endian.h.bck ../../../../memcached/include/sgx/bits/endian.h.bck
+--- ./sgx/bits/endian.h.bck	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/bits/endian.h.bck	2020-02-18 22:37:45.503704586 +0530
+@@ -0,0 +1,8 @@
++/* i386/x86_64 are little-endian.  */
++
++#ifndef _ENDIAN_H
++# error "Never use <bits/endian.h> directly; include <endian.h> instead."
++#endif
++
++#define __BYTE_ORDER __LITTLE_ENDIAN
++
+diff -Naur ./sgx/bits/sysctl.h ../../../../memcached/include/sgx/bits/sysctl.h
+--- ./sgx/bits/sysctl.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/bits/sysctl.h	2020-02-22 18:21:02.118021462 +0530
+@@ -0,0 +1,20 @@
++/* Copyright (C) 2012-2016 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#if defined __x86_64__ && defined __ILP32__
++# error "sysctl system call is unsupported in x32 kernel"
++#endif
+diff -Naur ./sgx/endian.h ../../../../memcached/include/sgx/endian.h
+--- ./sgx/endian.h	2019-09-02 14:56:55.604389227 +0530
++++ ../../../../memcached/include/sgx/endian.h	2020-02-22 18:24:52.378015189 +0530
+@@ -28,9 +28,9 @@
+    each byte, starting with the byte at the lowest address at the left,
+    and proceeding to the byte with the highest address at the right.  */
+ 
+-#define	__LITTLE_ENDIAN	1234
+-#define	__BIG_ENDIAN	4321
+-#define	__PDP_ENDIAN	3412
++//#define	__LITTLE_ENDIAN	1234
++//#define	__BIG_ENDIAN	4321
++//#define	__PDP_ENDIAN	3412
+ 
+ /* This file defines `__BYTE_ORDER' for the particular machine.  */
+ #include <sgx/bits/endian.h>
+@@ -42,10 +42,10 @@
+ #endif
+ 
+ #ifdef	__USE_BSD
+-# define LITTLE_ENDIAN	__LITTLE_ENDIAN
+-# define BIG_ENDIAN	__BIG_ENDIAN
+-# define PDP_ENDIAN	__PDP_ENDIAN
+-# define BYTE_ORDER	__BYTE_ORDER
++//# define LITTLE_ENDIAN	__LITTLE_ENDIAN
++//# define BIG_ENDIAN	__BIG_ENDIAN
++//# define PDP_ENDIAN	__PDP_ENDIAN
++//# define BYTE_ORDER	__BYTE_ORDER
+ #endif
+ 
+ #if __BYTE_ORDER == __LITTLE_ENDIAN
+diff -Naur ./sgx/linux/kernel.h ../../../../memcached/include/sgx/linux/kernel.h
+--- ./sgx/linux/kernel.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/linux/kernel.h	2020-02-22 18:16:59.542028070 +0530
+@@ -0,0 +1,13 @@
++#ifndef _LINUX_KERNEL_H
++#define _LINUX_KERNEL_H
++
++#include <linux/sysinfo.h>
++
++/*
++ * 'kernel.h' contains some often-used function prototypes etc
++ */
++#define __ALIGN_KERNEL(x, a)		__ALIGN_KERNEL_MASK(x, (typeof(x))(a) - 1)
++#define __ALIGN_KERNEL_MASK(x, mask)	(((x) + (mask)) & ~(mask))
++
++
++#endif /* _LINUX_KERNEL_H */
+diff -Naur ./sgx/linux/posix_types.h ../../../../memcached/include/sgx/linux/posix_types.h
+--- ./sgx/linux/posix_types.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/linux/posix_types.h	2020-02-22 18:17:56.910026508 +0530
+@@ -0,0 +1,37 @@
++#ifndef _LINUX_POSIX_TYPES_H
++#define _LINUX_POSIX_TYPES_H
++
++#include <linux/stddef.h>
++
++/*
++ * This allows for 1024 file descriptors: if NR_OPEN is ever grown
++ * beyond that you'll have to change this too. But 1024 fd's seem to be
++ * enough even for such "real" unices like OSF/1, so hopefully this is
++ * one limit that doesn't have to be changed [again].
++ *
++ * Note that POSIX wants the FD_CLEAR(fd,fdsetp) defines to be in
++ * <sys/time.h> (and thus <linux/time.h>) - but this is a more logical
++ * place for them. Solved by having dummy defines in <sys/time.h>.
++ */
++
++/*
++ * This macro may have been defined in <gnu/types.h>. But we always
++ * use the one here.
++ */
++#undef __FD_SETSIZE
++#define __FD_SETSIZE	1024
++
++typedef struct {
++	unsigned long fds_bits[__FD_SETSIZE / (8 * sizeof(long))];
++} __kernel_fd_set;
++
++/* Type of a signal handler.  */
++typedef void (*__kernel_sighandler_t)(int);
++
++/* Type of a SYSV IPC key.  */
++typedef int __kernel_key_t;
++typedef int __kernel_mqd_t;
++
++#include <asm/posix_types.h>
++
++#endif /* _LINUX_POSIX_TYPES_H */
+diff -Naur ./sgx/linux/sysctl.h ../../../../memcached/include/sgx/linux/sysctl.h
+--- ./sgx/linux/sysctl.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx/linux/sysctl.h	2020-02-22 18:16:16.418029245 +0530
+@@ -22,8 +22,8 @@
+ #ifndef _LINUX_SYSCTL_H
+ #define _LINUX_SYSCTL_H
+ 
+-#include <linux/kernel.h>
+-#include <linux/types.h>
++#include <sgx/linux/kernel.h>
++#include <sgx/linux/types.h>
+ 
+ 
+ struct completion;
+diff -Naur ./sgx/linux/sysinfo.h ../../../../memcached/include/sgx/linux/sysinfo.h
+--- ./sgx/linux/sysinfo.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/linux/sysinfo.h	2020-02-22 18:17:23.126027428 +0530
+@@ -0,0 +1,24 @@
++#ifndef _LINUX_SYSINFO_H
++#define _LINUX_SYSINFO_H
++
++#include <linux/types.h>
++
++#define SI_LOAD_SHIFT	16
++struct sysinfo {
++	__kernel_long_t uptime;		/* Seconds since boot */
++	__kernel_ulong_t loads[3];	/* 1, 5, and 15 minute load averages */
++	__kernel_ulong_t totalram;	/* Total usable main memory size */
++	__kernel_ulong_t freeram;	/* Available memory size */
++	__kernel_ulong_t sharedram;	/* Amount of shared memory */
++	__kernel_ulong_t bufferram;	/* Memory used by buffers */
++	__kernel_ulong_t totalswap;	/* Total swap space size */
++	__kernel_ulong_t freeswap;	/* swap space still available */
++	__u16 procs;		   	/* Number of current processes */
++	__u16 pad;		   	/* Explicit padding for m68k */
++	__kernel_ulong_t totalhigh;	/* Total high memory size */
++	__kernel_ulong_t freehigh;	/* Available high memory size */
++	__u32 mem_unit;			/* Memory unit size in bytes */
++	char _f[20-2*sizeof(__kernel_ulong_t)-sizeof(__u32)];	/* Padding: libc5 uses this.. */
++};
++
++#endif /* _LINUX_SYSINFO_H */
+diff -Naur ./sgx/linux/types.h ../../../../memcached/include/sgx/linux/types.h
+--- ./sgx/linux/types.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/linux/types.h	2020-02-22 18:17:42.254026907 +0530
+@@ -0,0 +1,51 @@
++#ifndef _LINUX_TYPES_H
++#define _LINUX_TYPES_H
++
++#include <asm/types.h>
++
++#ifndef __ASSEMBLY__
++
++#include <linux/posix_types.h>
++
++
++/*
++ * Below are truly Linux-specific types that should never collide with
++ * any application/library that wants linux/types.h.
++ */
++
++#ifdef __CHECKER__
++#define __bitwise__ __attribute__((bitwise))
++#else
++#define __bitwise__
++#endif
++#ifdef __CHECK_ENDIAN__
++#define __bitwise __bitwise__
++#else
++#define __bitwise
++#endif
++
++typedef __u16 __bitwise __le16;
++typedef __u16 __bitwise __be16;
++typedef __u32 __bitwise __le32;
++typedef __u32 __bitwise __be32;
++typedef __u64 __bitwise __le64;
++typedef __u64 __bitwise __be64;
++
++typedef __u16 __bitwise __sum16;
++typedef __u32 __bitwise __wsum;
++
++/*
++ * aligned_u64 should be used in defining kernel<->userspace ABIs to avoid
++ * common 32/64-bit compat problems.
++ * 64-bit values align to 4-byte boundaries on x86_32 (and possibly other
++ * architectures) and to 8-byte boundaries on 64-bit architectures.  The new
++ * aligned_64 type enforces 8-byte alignment so that structs containing
++ * aligned_64 values have the same alignment on 32-bit and 64-bit architectures.
++ * No conversions are necessary between 32-bit user-space and a 64-bit kernel.
++ */
++#define __aligned_u64 __u64 __attribute__((aligned(8)))
++#define __aligned_be64 __be64 __attribute__((aligned(8)))
++#define __aligned_le64 __le64 __attribute__((aligned(8)))
++
++#endif /*  __ASSEMBLY__ */
++#endif /* _LINUX_TYPES_H */
+diff -Naur ./sgx/string.h ../../../../memcached/include/sgx/string.h
+--- ./sgx/string.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/string.h	2020-02-28 18:44:01.783860971 +0530
+@@ -0,0 +1,11 @@
++#ifndef	_SGX_STRING_H
++#define	_SGX_STRING_H	1
++
++#include <string.h>
++
++char *strcat(char *dest, const char *src);
++char *strcpy(char *dest, const char *src);
++char *strdup(const char *s);
++char *strsignal(int sig);
++
++#endif /* _SGX_STRING_H */
+diff -Naur ./sgx/sys/resource.h ../../../../memcached/include/sgx/sys/resource.h
+--- ./sgx/sys/resource.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx/sys/resource.h	2020-02-27 23:23:38.429757738 +0530
+@@ -42,4 +42,5 @@
+ typedef int __priority_which_t;
+ #endif
+ 
++extern int getrusage (__rusage_who_t __who, struct rusage *__usage);
+ #endif	/* sys/resource.h  */
+diff -Naur ./sgx/sys/socket.h ../../../../memcached/include/sgx/sys/socket.h
+--- ./sgx/sys/socket.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx/sys/socket.h	2020-02-28 18:15:56.959906871 +0530
+@@ -112,5 +112,7 @@
+ // # include <bits/socket2.h>
+ // #endif
+ 
++extern int accept4 (int __fd, __SOCKADDR_ARG __addr,
++		    socklen_t *__restrict __addr_len, int __flags);
+ 
+ #endif /* sys/socket.h */
+diff -Naur ./sgx/sys/stat.h ../../../../memcached/include/sgx/sys/stat.h
+--- ./sgx/sys/stat.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx/sys/stat.h	2020-02-26 22:45:14.948174309 +0530
+@@ -37,6 +37,8 @@
+ # include <struct/sgx_time_struct.h>      /* For time_t resp. timespec.  */
+ #endif
+ 
++
++
+ #if defined __USE_XOPEN || defined __USE_XOPEN2K
+ /* The Single Unix specification says that some more types are
+    available here.  */
+diff -Naur ./sgx/sys/sysctl.h ../../../../memcached/include/sgx/sys/sysctl.h
+--- ./sgx/sys/sysctl.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx/sys/sysctl.h	2020-02-22 18:21:34.386020583 +0530
+@@ -18,7 +18,7 @@
+ #ifndef	_SYS_SYSCTL_H
+ #define	_SYS_SYSCTL_H	1
+ 
+-#include <features.h>
++#include <sgx/features.h>
+ #define __need_size_t
+ #include <stddef.h>
+ /* Prevent more kernel headers than necessary to be included.  */
+@@ -40,7 +40,7 @@
+ # define __undef__LINUX_COMPILER_H
+ #endif
+ 
+-#include <linux/sysctl.h>
++#include <sgx/linux/sysctl.h>
+ 
+ #ifdef __undef_LINUX_KERNEL_H
+ # undef _LINUX_KERNEL_H
+@@ -60,7 +60,7 @@
+ # undef __undef__LINUX_COMPILER_H
+ #endif
+ 
+-#include <bits/sysctl.h>
++#include <sgx/bits/sysctl.h>
+ 
+ 
+ #endif	/* _SYS_SYSCTL_H */
+diff -Naur ./sgx/sys/time.h ../../../../memcached/include/sgx/sys/time.h
+--- ./sgx/sys/time.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/sgx/sys/time.h	2020-02-24 14:32:50.761686824 +0530
+@@ -0,0 +1,191 @@
++/* Copyright (C) 1991-2016 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#ifndef _SYS_TIME_H
++#define _SYS_TIME_H	1
++
++#include <features.h>
++
++#include <bits/types.h>
++#define __need_time_t
++#include <time.h>
++#define __need_timeval
++#include <bits/time.h>
++
++#include <sys/select.h>
++
++#ifndef __suseconds_t_defined
++typedef __suseconds_t suseconds_t;
++# define __suseconds_t_defined
++#endif
++
++
++__BEGIN_DECLS
++
++#ifdef __USE_GNU
++/* Macros for converting between `struct timeval' and `struct timespec'.  */
++# define TIMEVAL_TO_TIMESPEC(tv, ts) {                                   \
++	(ts)->tv_sec = (tv)->tv_sec;                                    \
++	(ts)->tv_nsec = (tv)->tv_usec * 1000;                           \
++}
++# define TIMESPEC_TO_TIMEVAL(tv, ts) {                                   \
++	(tv)->tv_sec = (ts)->tv_sec;                                    \
++	(tv)->tv_usec = (ts)->tv_nsec / 1000;                           \
++}
++#endif
++
++
++#ifdef __USE_MISC
++/* Structure crudely representing a timezone.
++   This is obsolete and should never be used.  */
++struct timezone
++  {
++    int tz_minuteswest;		/* Minutes west of GMT.  */
++    int tz_dsttime;		/* Nonzero if DST is ever in effect.  */
++  };
++
++typedef struct timezone *__restrict __timezone_ptr_t;
++#else
++typedef void *__restrict __timezone_ptr_t;
++#endif
++
++/* Get the current time of day and timezone information,
++   putting it into *TV and *TZ.  If TZ is NULL, *TZ is not filled.
++   Returns 0 on success, -1 on errors.
++   NOTE: This form of timezone information is obsolete.
++   Use the functions and variables declared in <time.h> instead.  */
++extern int gettimeofday (struct timeval *__restrict __tv,
++			 __timezone_ptr_t __tz) __THROW __nonnull ((1));
++
++#ifdef __USE_MISC
++/* Set the current time of day and timezone information.
++   This call is restricted to the super-user.  */
++extern int settimeofday (const struct timeval *__tv,
++			 const struct timezone *__tz)
++     __THROW;
++
++/* Adjust the current time of day by the amount in DELTA.
++   If OLDDELTA is not NULL, it is filled in with the amount
++   of time adjustment remaining to be done from the last `adjtime' call.
++   This call is restricted to the super-user.  */
++extern int adjtime (const struct timeval *__delta,
++		    struct timeval *__olddelta) __THROW;
++#endif
++
++
++/* Values for the first argument to `getitimer' and `setitimer'.  */
++enum __itimer_which
++  {
++    /* Timers run in real time.  */
++    ITIMER_REAL = 0,
++#define ITIMER_REAL ITIMER_REAL
++    /* Timers run only when the process is executing.  */
++    ITIMER_VIRTUAL = 1,
++#define ITIMER_VIRTUAL ITIMER_VIRTUAL
++    /* Timers run when the process is executing and when
++       the system is executing on behalf of the process.  */
++    ITIMER_PROF = 2
++#define ITIMER_PROF ITIMER_PROF
++  };
++
++/* Type of the second argument to `getitimer' and
++   the second and third arguments `setitimer'.  */
++struct itimerval
++  {
++    /* Value to put into `it_value' when the timer expires.  */
++    struct timeval it_interval;
++    /* Time to the next timer expiration.  */
++    struct timeval it_value;
++  };
++
++#if defined __USE_GNU && !defined __cplusplus
++/* Use the nicer parameter type only in GNU mode and not for C++ since the
++   strict C++ rules prevent the automatic promotion.  */
++typedef enum __itimer_which __itimer_which_t;
++#else
++typedef int __itimer_which_t;
++#endif
++
++/* Set *VALUE to the current setting of timer WHICH.
++   Return 0 on success, -1 on errors.  */
++extern int getitimer (__itimer_which_t __which,
++		      struct itimerval *__value) __THROW;
++
++/* Set the timer WHICH to *NEW.  If OLD is not NULL,
++   set *OLD to the old value of timer WHICH.
++   Returns 0 on success, -1 on errors.  */
++extern int setitimer (__itimer_which_t __which,
++		      const struct itimerval *__restrict __new,
++		      struct itimerval *__restrict __old) __THROW;
++
++/* Change the access time of FILE to TVP[0] and the modification time of
++   FILE to TVP[1].  If TVP is a null pointer, use the current time instead.
++   Returns 0 on success, -1 on errors.  */
++extern int utimes (const char *__file, const struct timeval __tvp[2])
++     __THROW __nonnull ((1));
++
++#ifdef __USE_MISC
++/* Same as `utimes', but does not follow symbolic links.  */
++extern int lutimes (const char *__file, const struct timeval __tvp[2])
++     __THROW __nonnull ((1));
++
++/* Same as `utimes', but takes an open file descriptor instead of a name.  */
++extern int futimes (int __fd, const struct timeval __tvp[2]) __THROW;
++#endif
++
++#ifdef __USE_GNU
++/* Change the access time of FILE relative to FD to TVP[0] and the
++   modification time of FILE to TVP[1].  If TVP is a null pointer, use
++   the current time instead.  Returns 0 on success, -1 on errors.  */
++extern int futimesat (int __fd, const char *__file,
++		      const struct timeval __tvp[2]) __THROW;
++#endif
++
++
++#ifdef __USE_MISC
++/* Convenience macros for operations on timevals.
++   NOTE: `timercmp' does not work for >= or <=.  */
++# define timerisset(tvp)	((tvp)->tv_sec || (tvp)->tv_usec)
++# define timerclear(tvp)	((tvp)->tv_sec = (tvp)->tv_usec = 0)
++# define timercmp(a, b, CMP) 						      \
++  (((a)->tv_sec == (b)->tv_sec) ? 					      \
++   ((a)->tv_usec CMP (b)->tv_usec) : 					      \
++   ((a)->tv_sec CMP (b)->tv_sec))
++# define timeradd(a, b, result)						      \
++  do {									      \
++    (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;			      \
++    (result)->tv_usec = (a)->tv_usec + (b)->tv_usec;			      \
++    if ((result)->tv_usec >= 1000000)					      \
++      {									      \
++	++(result)->tv_sec;						      \
++	(result)->tv_usec -= 1000000;					      \
++      }									      \
++  } while (0)
++# define timersub(a, b, result)						      \
++  do {									      \
++    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;			      \
++    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;			      \
++    if ((result)->tv_usec < 0) {					      \
++      --(result)->tv_sec;						      \
++      (result)->tv_usec += 1000000;					      \
++    }									      \
++  } while (0)
++#endif	/* Misc.  */
++
++__END_DECLS
++
++#endif /* sys/time.h */
+diff -Naur ./sgx_fcntl_util.h ../../../../memcached/include/sgx_fcntl_util.h
+--- ./sgx_fcntl_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_fcntl_util.h	2020-02-28 18:19:52.375900457 +0530
+@@ -21,6 +21,7 @@
+ #define open(A, B, ...) sgx_wrapper_open((A), (B), ##__VA_ARGS__)
+ #define creat(A, B) sgx_wrapper_creat(A, B)
+ #define openat(A, B, C, ...) sgx_wrapper_openat((A), (B), (C), ##__VA_ARGS__)
+-#define fcntl(A, B, ...) sgx_wrapper_fcntl((A),(B), ##__VA_ARGS__)
++//#define fcntl(A, B, ...) sgx_wrapper_fcntl((A),(B), ##__VA_ARGS__)
+ 
+-#endif
+\ No newline at end of file
++extern int fcntl(int __fd, int __cmd, ...);
++#endif
+diff -Naur ./sgx_signal_util.h ../../../../memcached/include/sgx_signal_util.h
+--- ./sgx_signal_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_signal_util.h	2020-02-28 18:47:19.867855574 +0530
+@@ -1,9 +1,13 @@
+ #ifndef SGX_SIGNAL_UTIL_H
+ #define SGX_SIGNAL_UTIL_H
+ 
++
+ #include <struct/sgx_signal_struct.h>
+ #include <proxy/sgx_signal_t.h>
+ 
++int sigignore(int sig);
++extern int kill (__pid_t __pid, int __sig);
++
+ static inline int sgx_wrapper_sigemptyset(sigset_t *set)
+ {
+ 	int retval;
+@@ -93,4 +97,4 @@
+ #define signal(A, B) sgx_wrapper_signal(A, B)
+ #define raise(A) sgx_wrapper_raise(A)
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff -Naur ./sgx_stdio_util.h ../../../../memcached/include/sgx_stdio_util.h
+--- ./sgx_stdio_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_stdio_util.h	2020-03-02 14:26:18.309220794 +0530
+@@ -5,13 +5,19 @@
+ #include "proxy/sgx_stdio_t.h"
+ #include <stdio.h>
+ 
++typedef int FILE;
++
+ #ifdef __cplusplus
+ extern "C"	{
+ #endif 
+ 
++void setbuf(FILE *stream, char *buf);
++ssize_t getline(char **lineptr, size_t *n, FILE *stream);
++
+ extern int sgx_wrapper_printf(const char *fmt, ...);
+ extern int sgx_wrapper_printf_debug(const char *fmt, ...);
+ extern int sgx_wrapper_fprintf(int FILESTREAM, const char* fmt, ...);
++extern int sgx_wrapper_sprintf(char *str, const char *format, ...);
+ extern int sgx_wrapper_asprintf(char **s, const char* format, ...);
+ extern SGX_WRAPPER_FILE sgx_wrapper_fdopen(int fd, const char* mode);
+ extern int sgx_wrapper_fileno(SGX_WRAPPER_FILE stream);
+@@ -139,6 +145,7 @@
+ #define printf(A, ...) sgx_wrapper_printf(A, ##__VA_ARGS__)
+ #define debug(A, ...) sgx_wrapper_printf_debug(A, ##__VA_ARGS__)
+ #define fprintf(A, B, ...) sgx_wrapper_fprintf(A, B, ##__VA_ARGS__)
++#define sprintf(A, B, ...) sgx_wrapper_sprintf(A, B, ##__VA_ARGS__)
+ #define asprintf(A, B, ...) sgx_wrapper_asprintf(A, B, ##__VA_ARGS__)
+ #define funlockfile(A) sgx_wrapper_funlockfile(A)
+ #define flockfile(A) sgx_wrapper_flockfile(A)
+@@ -167,4 +174,4 @@
+ #define fputc(A, B) sgx_wrapper_fputc(A, B)
+ #define rename(A, B) sgx_wrapper_rename(A, B)
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff -Naur ./sgx_stdlib_util.h ../../../../memcached/include/sgx_stdlib_util.h
+--- ./sgx_stdlib_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_stdlib_util.h	2020-03-02 11:12:50.353537032 +0530
+@@ -6,6 +6,9 @@
+ #include <stdlib.h>
+ #include <sgx_stdio_util.h>
+ 
++int posix_memalign(void **memptr, size_t alignment, size_t size);
++int getsubopt(char **optionp, char * const *tokens, char **valuep);
++
+ #ifdef __cplusplus
+ extern "C"	{
+ #endif 
+@@ -20,6 +23,7 @@
+ extern void sgx_wrapper_srandom (unsigned int seed);
+ extern int sgx_wrapper_mkstemp(char *string);
+ extern char *sgx_wrapper_mkdtemp(char *temp);
++extern void exit (int __status);
+ 
+ #ifdef __cplusplus
+ }
+@@ -37,4 +41,4 @@
+ #define unsetenv(A) sgx_wrapper_unsetenv(A)
+ #define mkdtemp(A) sgx_wrapper_mkdtemp(A)
+ #define mkstemp(A) sgx_wrapper_mkstemp(A)
+-#endif 
+\ No newline at end of file
++#endif 
+diff -Naur ./sgx_sysmman_util.h ../../../../memcached/include/sgx_sysmman_util.h
+--- ./sgx_sysmman_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_sysmman_util.h	2020-03-02 11:00:55.961556495 +0530
+@@ -3,6 +3,8 @@
+ 
+ #include "proxy/sgx_sysmman_t.h"
+ 
++int madvise(void *addr, size_t length, int advice);
++
+ #ifdef __cplusplus
+ extern "C"	{
+ #endif 
+diff -Naur ./sgx_syssocket_util.h ../../../../memcached/include/sgx_syssocket_util.h
+--- ./sgx_syssocket_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_syssocket_util.h	2020-02-28 18:22:35.743896007 +0530
+@@ -4,6 +4,8 @@
+ #include "struct/sgx_syssocket_struct.h"
+ #include "proxy/sgx_syssocket_t.h"
+ 
++#define TCP_NODELAY         1
++
+ #ifdef __cplusplus
+ extern "C"	{
+ #endif 
+diff -Naur ./sgx_sysstat_util.h ../../../../memcached/include/sgx_sysstat_util.h
+--- ./sgx_sysstat_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_sysstat_util.h	2020-02-28 19:42:29.103765420 +0530
+@@ -1,5 +1,7 @@
+ #ifndef SGX_SYSSTAT_UTIL_H
+ #define SGX_SYSSTAT_UTIL_H
++
++#include "sgx/sys/stat.h"
+ #include "proxy/sgx_sysstat_t.h"
+ 
+ #ifdef __cplusplus
+@@ -34,4 +36,4 @@
+ #define mkfifo(A, B) sgx_wrapper_mkfifo(A, B)
+ #define mkfifoat(A, B, C) sgx_wrapper_mkfifoat(A, B, C)
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff -Naur ./sgx_sysuio_util.h ../../../../memcached/include/sgx_sysuio_util.h
+--- ./sgx_sysuio_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_sysuio_util.h	2020-02-27 20:27:27.842045715 +0530
+@@ -1,6 +1,8 @@
+ #ifndef SGX_SYSUIO_UTIL_H
+ #define SGX_SYSUIO_UTIL_H
+ 
++#define IOV_MAX	1024		/* max 1K of iov's */
++
+ #include "proxy/sgx_sysuio_t.h"
+ 
+ #ifdef __cplusplus
+diff -Naur ./sgx_unistd_util.h ../../../../memcached/include/sgx_unistd_util.h
+--- ./sgx_unistd_util.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/sgx_unistd_util.h	2020-03-02 11:15:56.913531950 +0530
+@@ -4,6 +4,13 @@
+ #include "proxy/sgx_unistd_t.h"
+ #include "sgx_thread.h"
+ 
++int ftruncate(int fd, off_t  length);
++pid_t setsid(void);
++pid_t fork(void);
++int setgroups(size_t size, const gid_t *list);
++int access(const char *pathname, int mode);
++#  define F_OK	0		/* Test for existence.  */
++
+ #ifdef __cplusplus
+ extern "C"	{
+ #endif 
+@@ -44,6 +51,7 @@
+ extern int sgx_wrapper_unlink(const char *name);
+ extern int sgx_wrapper_rmdir(const char *name);
+ extern void sgx_wrapper__exit(int status);
++extern void exit (int __status);
+ extern long sgx_wrapper_sysconf(int name);
+ extern int sgx_wrapper_setuid(uid_t uid);
+ extern int sgx_wrapper_setgid(gid_t gid);
+diff -Naur ./struct/sgx_stdio_struct.h ../../../../memcached/include/struct/sgx_stdio_struct.h
+--- ./struct/sgx_stdio_struct.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/struct/sgx_stdio_struct.h	2020-03-02 14:24:56.397223025 +0530
+@@ -26,4 +26,4 @@
+ # define SEEK_HOLE	4	/* Seek to next hole.  */
+ #endif
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff -Naur ./struct/sgx_time_struct.h ../../../../memcached/include/struct/sgx_time_struct.h
+--- ./struct/sgx_time_struct.h	2019-09-02 14:56:55.608389227 +0530
++++ ../../../../memcached/include/struct/sgx_time_struct.h	2020-02-27 10:35:48.547012831 +0530
+@@ -3,6 +3,7 @@
+ 
+ #include <time.h>
+ 
++
+ # ifndef _STRUCT_TIMEVAL
+ # define _STRUCT_TIMEVAL 1
+ struct timeval   {
+@@ -18,6 +19,8 @@
+ };
+ #endif 
+ 
++#define _TIME_H 1
++
+ #if (!defined __timespec_defined					\
+      && ((defined _TIME_H						\
+ 	  && (defined __USE_POSIX199309 || defined __USE_MISC		\
+@@ -69,4 +72,4 @@
+ 
+ #endif
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff -Naur ./user_types.h ../../../../memcached/include/user_types.h
+--- ./user_types.h	1970-01-01 05:30:00.000000000 +0530
++++ ../../../../memcached/include/user_types.h	2020-02-20 11:38:33.703386978 +0530
+@@ -0,0 +1,80 @@
++/**
++*   Copyright(C) 2011-2015 Intel Corporation All Rights Reserved.
++*
++*   The source code, information  and  material ("Material") contained herein is
++*   owned  by Intel Corporation or its suppliers or licensors, and title to such
++*   Material remains  with Intel Corporation  or its suppliers or licensors. The
++*   Material  contains proprietary information  of  Intel or  its  suppliers and
++*   licensors. The  Material is protected by worldwide copyright laws and treaty
++*   provisions. No  part  of  the  Material  may  be  used,  copied, reproduced,
++*   modified, published, uploaded, posted, transmitted, distributed or disclosed
++*   in any way  without Intel's  prior  express written  permission. No  license
++*   under  any patent, copyright  or  other intellectual property rights  in the
++*   Material  is  granted  to  or  conferred  upon  you,  either  expressly,  by
++*   implication, inducement,  estoppel or  otherwise.  Any  license  under  such
++*   intellectual  property  rights must  be express  and  approved  by  Intel in
++*   writing.
++*
++*   *Third Party trademarks are the property of their respective owners.
++*
++*   Unless otherwise  agreed  by Intel  in writing, you may not remove  or alter
++*   this  notice or  any other notice embedded  in Materials by Intel or Intel's
++*   suppliers or licensors in any way.
++*/
++
++/* User defined types */
++
++#include "sgx_eid.h"
++
++#ifdef _MSC_VER
++#define memccpy _memccpy
++#endif
++
++#define LOOPS_PER_THREAD 100000
++#define REMOVE_REPLACEMENT 1
++
++typedef void *buffer_t;
++typedef int array_t[10];
++
++#include "struct/sgx_stdio_struct.h"
++
++
++#ifndef STRING_DUP_H
++#define STRING_DUP_H
++#include <stdlib.h>
++#include <string.h>
++// extern 
++static inline char *strdup (const char *s) {
++  if (s == NULL) return NULL;  
++	int len = strlen (s) + 1;
++    char *d = (char*)malloc (len);   // Space for length plus nul
++    if (d == NULL) return NULL;          // No memory
++    strncpy (d,s,len);                        // Copy the characters
++    return d;                            // Return the new string
++}
++#endif
++
++extern char *tds_getpassarg(char *arg);
++// extern char *tds_readpassphrase(const char *prompt, char *buf, size_t bufsiz, int flags);
++
++extern sgx_enclave_id_t tds_enclave_id;
++extern sgx_enclave_id_t vrfcert_enclave_id;
++extern uint32_t test_create_session(sgx_enclave_id_t src_enclave_id, sgx_enclave_id_t dest_enclave_id);
++extern uint32_t test_encalve_to_enclave_verify_cert(sgx_enclave_id_t src_enclave_id, sgx_enclave_id_t dest_enclave_id, uint8_t* data, long len_data);
++extern uint32_t test_close_session(sgx_enclave_id_t src_enclave_id, sgx_enclave_id_t dest_enclave_id);
++
++# ifndef _STRUCT_TIMEVAL
++# define _STRUCT_TIMEVAL 1
++
++#include <time.h>
++struct timeval   {
++ time_t tv_sec;
++ long int tv_usec;
++};
++# endif  /* struct timeval */
++
++#ifndef TDS_NET_H
++#define TDS_NET_H
++
++#endif
++

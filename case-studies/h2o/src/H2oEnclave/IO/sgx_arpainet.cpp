@@ -3,7 +3,7 @@
 #include <sgx_arpainet_util.h>
 #include <sgx_ocall_util.h>
 #include <H2oEnclave_t.h>
-#include <exception>
+//#include <exception.h>
 #include <sgx_status.h>
 #include <sgx_thread.h>
 

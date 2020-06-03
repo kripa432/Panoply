@@ -403,11 +403,11 @@ int SGX_CDECL main(int argc, char *argv[])
     int eret;
     sgx_status_t ret;
 
-    size_t enc_start_addr = get_parsed_section_info(".start", 0);
-    size_t sec_data_addr = get_parsed_section_info(".data", 0);
-    size_t sec_data_size = get_parsed_section_info(".data", 1);
-    size_t bss_data_addr = get_parsed_section_info(".bss", 0);
-    size_t bss_data_size = get_parsed_section_info(".bss", 1); 
+   // size_t enc_start_addr = get_parsed_section_info(".start", 0);
+   // size_t sec_data_addr = get_parsed_section_info(".data", 0);
+   // size_t sec_data_size = get_parsed_section_info(".data", 1);
+   // size_t bss_data_addr = get_parsed_section_info(".bss", 0);
+   // size_t bss_data_size = get_parsed_section_info(".bss", 1); 
 
 	/*
     int spret;

@@ -965,9 +965,9 @@ static int open_unix_listener(h2o_configurator_command_t *cmd, yoml_t *node, str
 static int open_tcp_listener(h2o_configurator_command_t *cmd, yoml_t *node, const char *hostname, const char *servname, int domain,
                              int type, int protocol, struct sockaddr *addr, socklen_t addrlen)
 {
-    printf("open_tcp_listener with : %s \n", hostname);
+	printf("open_tcp_listener with ===================================================================================hostname= %s \n", hostname);
     // Fix me: Hard code for testing
-    hostname = "127.0.0.1";
+    //hostname = "10.192.46.14";
     int fd;   
 
     if ((fd = socket(domain, type, protocol)) == -1)
@@ -1020,7 +1020,7 @@ Error:
 
 static int on_config_listen(h2o_configurator_command_t *cmd, h2o_configurator_context_t *ctx, yoml_t *node)
 {
-    print_string("on_config_listen \n");
+    print_string("(kripa432) on_config_listen \n");
     const char *hostname = NULL, *servname = NULL, *type = "tcp";
     yoml_t *ssl_node = NULL;
     int proxy_protocol = 0;
@@ -1038,6 +1038,7 @@ static int on_config_listen(h2o_configurator_command_t *cmd, h2o_configurator_co
                 return -1;
             }
             hostname = t->data.scalar;
+	    printf("(kripa432 on_config_listner) hostname = %s\n", hostname);
         }
         if ((t = yoml_get(node, "port")) == NULL) {
             h2o_configurator_errprintf(cmd, node, "cannot find mandatory property `port`");
@@ -1138,6 +1139,7 @@ static int on_config_listen(h2o_configurator_command_t *cmd, h2o_configurator_co
             h2o_configurator_errprintf(cmd, node, "failed to resolve the listening address: getaddrinfo returned an empty list");
             return -1;
         }
+	printf("\nkripa432: 1\n");
         /* listen to the returned addresses */
         for (ai = res; ai != NULL; ai = ai->ai_next) {
             struct listener_config_t *listener = find_listener(ai->ai_addr, ai->ai_addrlen);
@@ -2013,7 +2015,7 @@ int ecall_h2o_main(int argc, char **argv)
     }
 
     // fprintf(stderr, "h2o server (pid:%d) is ready to serve requests\n", (int)getpid());
-    conf.num_threads = 4;
+    conf.num_threads = 1;
     assert(conf.num_threads != 0);
     //  sgx_wrapper_printf_debug("\n Number of threads in config: %d \n", conf.num_threads);
 
